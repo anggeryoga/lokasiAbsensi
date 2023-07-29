@@ -25,7 +25,8 @@ Absensi Lokasi adalah aplikasi web sederhana yang memungkinkan pengguna melakuka
 1. Clone repositori ke mesin lokal Anda:
 
 ```javascript
-git clone [https://github.com/anggeryoga/lokasiAbsensi.git](https://github.com/anggeryoga/lokasiAbsensi.git)
+git clone https://anggeryoga.github.io/lokasiAbsensi/
+ 
 ```
 ## Cara Kerja
 1. Aplikasi menggunakan API Geolocation untuk mendapatkan lokasi saat ini dari pengguna.
