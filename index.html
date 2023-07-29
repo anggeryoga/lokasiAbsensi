@@ -21,73 +21,86 @@
         </form>
         <p id="message"></p>
     </div>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const attendanceForm = document.getElementById("attendanceForm");
-            const nameInput = document.getElementById("name");
-            const absentNumberInput = document.getElementById("absentNumber");
-            const arrivalTimeInput = document.getElementById("arrivalTime");
-            const message = document.getElementById("message");
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec';
+            const form = document.getElementById('attendanceForm');
+            const message = document.getElementById('message');
 
-            attendanceForm.addEventListener("submit", function (event) {
-                event.preventDefault();
+            form.addEventListener('submit', e => {
+                e.preventDefault();
 
-                // Cek apakah browser mendukung Geolocation API
-                if ("geolocation" in navigator) {
-                    // Mengambil lokasi pengguna
-                    navigator.geolocation.getCurrentPosition(
-                        function (position) {
-                            // Lokasi pengguna berhasil diambil
-                            const latitude = position.coords.latitude;
-                            const longitude = position.coords.longitude;
-
-                            // Panggil fungsi untuk memeriksa lokasi
-                            checkLocation(latitude, longitude);
-                        },
-                        function (error) {
-                            // Lokasi pengguna gagal diambil
-                            message.textContent = "Gagal mengambil lokasi. Pastikan izin lokasi diaktifkan.";
-                            message.style.color = "red";
+                // Validasi lokasi di sisi klien
+                validateLocation()
+                    .then(isWithinAllowedLocation => {
+                        if (isWithinAllowedLocation) {
+                            // Jika lokasi diizinkan, kirimkan data ke server
+                            fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                                .then(response => {
+                                    message.textContent = 'Absensi berhasil terkirim!';
+                                    message.style.color = 'green';
+                                    console.log('Success!', response);
+                                })
+                                .catch(error => {
+                                    message.textContent = 'Terjadi kesalahan saat mengirim absensi.';
+                                    message.style.color = 'red';
+                                    console.error('Error!', error.message);
+                                });
+                        } else {
+                            // Jika lokasi tidak diizinkan, tampilkan pesan error
+                            message.textContent = 'Absensi tidak diizinkan di lokasi ini.';
+                            message.style.color = 'red';
                         }
-                    );
-                } else {
-                    message.textContent = "Geolocation tidak didukung di browser ini.";
-                    message.style.color = "red";
-                }
+                    })
+                    .catch(error => {
+                        // Jika terjadi kesalahan saat mendapatkan lokasi
+                        message.textContent = error.message;
+                        message.style.color = 'red';
+                        console.error('Error!', error.message);
+                    });
             });
 
-            function checkLocation(latitude, longitude) {
-                // Koordinat lokasi yang diizinkan
-                const allowedLatitude = -6.572226;
-                const allowedLongitude = 110.680498;
+            function validateLocation() {
+                // Cek apakah browser mendukung Geolocation API
+                if ('geolocation' in navigator) {
+                    return new Promise((resolve, reject) => {
+                        // Mengambil lokasi pengguna
+                        navigator.geolocation.getCurrentPosition(
+                            function (position) {
+                                // Lokasi pengguna berhasil diambil
+                                const userCoords = {
+                                    latitude: position.coords.latitude,
+                                    longitude: position.coords.longitude,
+                                };
 
-                // Radius izin dalam meter
-                const radius = 10;
+                                // Koordinat lokasi yang diizinkan
+                                const allowedCoords = {
+                                    latitude: -6.572247,
+                                    longitude: 110.680504,
+                                };
+                               
+                                // Menghitung jarak antara lokasi pengguna dengan lokasi yang diizinkan
+                                const distance = getDistanceFromLatLonInMeters(userCoords.latitude, userCoords.longitude, allowedCoords.latitude, allowedCoords.longitude);
 
-                // Menghitung jarak antara lokasi pengguna dengan lokasi yang diizinkan
-                const distance = getDistanceFromLatLonInMeters(latitude, longitude, allowedLatitude, allowedLongitude);
+                                // Radius izin dalam meter
+                                const radius = 100;
 
-                if (distance <= radius) {
-                    // Lokasi diizinkan, bisa melakukan absensi
-                    message.textContent = `Absensi berhasil untuk ${nameInput.value}.`;
-                    message.style.color = "green";
-                    setArrivalTime();
+                                // Memeriksa apakah lokasi di dalam radius izin
+                                const isWithinAllowedLocation = distance <= radius;
+
+                                resolve(isWithinAllowedLocation);
+                            },
+                            function (error) {
+                                // Lokasi pengguna gagal diambil
+                                reject(new Error('Gagal mengambil lokasi. Pastikan izin lokasi diaktifkan.'));
+                            }
+                        );
+                    });
                 } else {
-                    // Lokasi tidak diizinkan, absensi tidak diperbolehkan
-                    message.textContent = `Absensi tidak diizinkan di lokasi ini.`;
-                    message.style.color = "red";
-                }
-
-                // Tampilkan notifikasi sesuai hasil absensi
-                if (distance <= radius) {
-                    showNotification("Absensi Berhasil", `Absensi berhasil untuk ${nameInput.value}.`);
-                } else {
-                    showNotification("Absensi Gagal", "Absensi tidak diizinkan di lokasi ini.");
+                    return Promise.reject(new Error('Geolocation tidak didukung di browser ini.'));
                 }
             }
 
-            // Fungsi untuk menghitung jarak antara dua koordinat dalam meter
             function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
                 const R = 6371; // Radius bumi dalam kilometer
                 const dLat = deg2rad(lat2 - lat1);
@@ -103,41 +116,7 @@
             function deg2rad(deg) {
                 return deg * (Math.PI / 180);
             }
-
-            function setArrivalTime() {
-                const now = new Date();
-                const hours = now.getHours().toString().padStart(2, "0");
-                const minutes = now.getMinutes().toString().padStart(2, "0");
-                const arrivalTime = `${hours}:${minutes}`;
-                arrivalTimeInput.value = arrivalTime;
-            }
-
-            function showNotification(title, message) {
-                if ("Notification" in window) {
-                    Notification.requestPermission().then(function (permission) {
-                        if (permission === "granted") {
-                            new Notification(title, {
-                                body: message,
-                                icon: "notification-icon.png", // Ganti dengan URL gambar ikon notifikasi Anda
-                            });
-                        }
-                    });
-                }
-            }
         });
     </script>
-
-    <!-- Remove the old script for form submission and replace it with a new one -->
-<script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec'
-  const form = document.forms['attendanceForm']
-
-  form.addEventListener('submit', e => {
-    e.preventDefault()
-    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-      .then(response => console.log('Success!', response))
-      .catch(error => console.error('Error!', error.message))
-  })
-</script>
 </body>
 </html>
