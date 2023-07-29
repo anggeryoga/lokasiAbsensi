@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Absensi Lokasi</title>
-    <meta charset="UTF-8">
+     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,12 +12,12 @@
         <h1>Absensi Lokasi</h1>
         <form id="attendanceForm">
             <label for="name">Nama:</label>
-            <input type="text" id="name" required>
+            <input type="text" id="name" name="nama" required>
             <label for="absentNumber">Nomor Absen:</label>
-            <input type="text" id="absentNumber" required>
+            <input type="text" id="absentNumber" name="absensi" required>
             <div class="time-container">
                 <label for="arrivalTime">Jam Kedatangan:</label>
-                <input type="text" id="arrivalTime" disabled>
+                <input type="text" id="arrivalTime" name="waktu" disabled>
             </div>
             <button type="submit" id="submitButton">Absen</button>
         </form>
@@ -128,39 +128,18 @@
             }
         });
     </script>
-    <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec';
-        const form = document.forms['attendanceForm'];
-        let isSubmitting = false;
 
-        form.addEventListener('submit', e => {
-            e.preventDefault();
+    <!-- Remove the old script for form submission and replace it with a new one -->
+<script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec'
+  const form = document.forms['attendanceForm']
 
-            if (isSubmitting) {
-                return;
-            }
-
-            isSubmitting = true;
-
-            alert('Kami sedang mengirimkan jawaban formulir Anda. Silakan tunggu sebentar!');
-
-            fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-                .then(response => {
-                    if (response.ok) {
-                        form.reset();
-                    } else {
-                        alert('Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.');
-                    }
-
-                    isSubmitting = false;
-                })
-                .catch(error => {
-                    alert('Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.');
-                    console.error('Error!', error.message);
-
-                    isSubmitting = false;
-                });
-        });
-    </script>
+  form.addEventListener('submit', e => {
+    e.preventDefault()
+    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+      .then(response => console.log('Success!', response))
+      .catch(error => console.error('Error!', error.message))
+  })
+</script>
 </body>
 </html>
