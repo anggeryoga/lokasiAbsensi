@@ -1,127 +1,164 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Absensi Lokasi</title>
-<style>
-    body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-h1 {
-  text-align: center;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-label, input, button {
-  margin-bottom: 10px;
-}
-
-#message {
-  font-weight: bold;
-}
-
-</style>
+    <title>Absensi Lokasi</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <h1>Absensi Lokasi</h1>
-    <p>Masukkan Nama dan Tekan Tombol Absen:</p>
-    <form id="attendanceForm">
-      <label for="name">Nama:</label>
-      <input type="text" id="name" required>
-      <button type="submit" id="submitButton">Absen</button>
-    </form>
-    <p id="message"></p>
-  </div>
+    <div class="container">
+        <h1>Absensi Lokasi</h1>
+        <form id="attendanceForm">
+            <label for="name">Nama:</label>
+            <input type="text" id="name" required>
+            <label for="absentNumber">Nomor Absen:</label>
+            <input type="text" id="absentNumber" required>
+            <div class="time-container">
+                <label for="arrivalTime">Jam Kedatangan:</label>
+                <input type="text" id="arrivalTime" disabled>
+            </div>
+            <button type="submit" id="submitButton">Absen</button>
+        </form>
+        <p id="message"></p>
+    </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("attendanceForm");
-  const nameInput = document.getElementById("name");
-  const message = document.getElementById("message");
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const attendanceForm = document.getElementById("attendanceForm");
+            const nameInput = document.getElementById("name");
+            const absentNumberInput = document.getElementById("absentNumber");
+            const arrivalTimeInput = document.getElementById("arrivalTime");
+            const message = document.getElementById("message");
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
+            attendanceForm.addEventListener("submit", function (event) {
+                event.preventDefault();
 
-    // Cek apakah browser mendukung Geolocation API
-    if ("geolocation" in navigator) {
-      // Mengambil lokasi pengguna
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          // Lokasi pengguna berhasil diambil
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
+                // Cek apakah browser mendukung Geolocation API
+                if ("geolocation" in navigator) {
+                    // Mengambil lokasi pengguna
+                    navigator.geolocation.getCurrentPosition(
+                        function (position) {
+                            // Lokasi pengguna berhasil diambil
+                            const latitude = position.coords.latitude;
+                            const longitude = position.coords.longitude;
 
-          // Panggil fungsi untuk memeriksa lokasi
-          checkLocation(latitude, longitude);
-        },
-        function (error) {
-          // Lokasi pengguna gagal diambil
-          message.textContent = "Gagal mengambil lokasi. Pastikan izin lokasi diaktifkan.";
-          message.style.color = "red";
-        }
-      );
-    } else {
-      message.textContent = "Geolocation tidak didukung di browser ini.";
-      message.style.color = "red";
-    }
-  });
+                            // Panggil fungsi untuk memeriksa lokasi
+                            checkLocation(latitude, longitude);
+                        },
+                        function (error) {
+                            // Lokasi pengguna gagal diambil
+                            message.textContent = "Gagal mengambil lokasi. Pastikan izin lokasi diaktifkan.";
+                            message.style.color = "red";
+                        }
+                    );
+                } else {
+                    message.textContent = "Geolocation tidak didukung di browser ini.";
+                    message.style.color = "red";
+                }
+            });
 
-  function checkLocation(latitude, longitude) {
-    // Koordinat lokasi yang diizinkan
-    const allowedLatitude = -6.572249;
-    const allowedLongitude = 110.680508;
+            function checkLocation(latitude, longitude) {
+                // Koordinat lokasi yang diizinkan
+                const allowedLatitude = -6.572226;
+                const allowedLongitude = 110.680498;
 
-    // Radius izin dalam meter
-    const radius = 10;
+                // Radius izin dalam meter
+                const radius = 10;
 
-    // Menghitung jarak antara lokasi pengguna dengan lokasi yang diizinkan
-    const distance = getDistanceFromLatLonInMeters(latitude, longitude, allowedLatitude, allowedLongitude);
+                // Menghitung jarak antara lokasi pengguna dengan lokasi yang diizinkan
+                const distance = getDistanceFromLatLonInMeters(latitude, longitude, allowedLatitude, allowedLongitude);
 
-    if (distance <= radius) {
-      // Lokasi diizinkan, bisa melakukan absensi
-      message.textContent = `Absensi berhasil untuk ${nameInput.value}.`;
-      message.style.color = "green";
-    } else {
-      // Lokasi tidak diizinkan, absensi tidak diperbolehkan
-      message.textContent = `Absensi tidak diizinkan di lokasi ini.`;
-      message.style.color = "red";
-    }
-  }
+                if (distance <= radius) {
+                    // Lokasi diizinkan, bisa melakukan absensi
+                    message.textContent = `Absensi berhasil untuk ${nameInput.value}.`;
+                    message.style.color = "green";
+                    setArrivalTime();
+                } else {
+                    // Lokasi tidak diizinkan, absensi tidak diperbolehkan
+                    message.textContent = `Absensi tidak diizinkan di lokasi ini.`;
+                    message.style.color = "red";
+                }
 
-  // Fungsi untuk menghitung jarak antara dua koordinat dalam meter
-  function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radius bumi dalam kilometer
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c * 1000; // Jarak dalam meter
-    return d;
-  }
+                // Tampilkan notifikasi sesuai hasil absensi
+                if (distance <= radius) {
+                    showNotification("Absensi Berhasil", `Absensi berhasil untuk ${nameInput.value}.`);
+                } else {
+                    showNotification("Absensi Gagal", "Absensi tidak diizinkan di lokasi ini.");
+                }
+            }
 
-  function deg2rad(deg) {
-    return deg * (Math.PI / 180);
-  }
-});
+            // Fungsi untuk menghitung jarak antara dua koordinat dalam meter
+            function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Radius bumi dalam kilometer
+                const dLat = deg2rad(lat2 - lat1);
+                const dLon = deg2rad(lon2 - lon1);
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const d = R * c * 1000; // Jarak dalam meter
+                return d;
+            }
 
-  </script>
+            function deg2rad(deg) {
+                return deg * (Math.PI / 180);
+            }
+
+            function setArrivalTime() {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, "0");
+                const minutes = now.getMinutes().toString().padStart(2, "0");
+                const arrivalTime = `${hours}:${minutes}`;
+                arrivalTimeInput.value = arrivalTime;
+            }
+
+            function showNotification(title, message) {
+                if ("Notification" in window) {
+                    Notification.requestPermission().then(function (permission) {
+                        if (permission === "granted") {
+                            new Notification(title, {
+                                body: message,
+                                icon: "notification-icon.png", // Ganti dengan URL gambar ikon notifikasi Anda
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec';
+        const form = document.forms['attendanceForm'];
+        let isSubmitting = false;
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+
+            if (isSubmitting) {
+                return;
+            }
+
+            isSubmitting = true;
+
+            alert('Kami sedang mengirimkan jawaban formulir Anda. Silakan tunggu sebentar!');
+
+            fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                .then(response => {
+                    if (response.ok) {
+                        form.reset();
+                    } else {
+                        alert('Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.');
+                    }
+
+                    isSubmitting = false;
+                })
+                .catch(error => {
+                    alert('Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.');
+                    console.error('Error!', error.message);
+
+                    isSubmitting = false;
+                });
+        });
+    </script>
 </body>
 </html>
-
