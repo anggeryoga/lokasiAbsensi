@@ -21,7 +21,7 @@
         </form>
         <p id="message"></p>
     </div>
-    <script>
+ <script>
         document.addEventListener("DOMContentLoaded", function () {
             const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec';
             const form = document.getElementById('attendanceForm');
@@ -40,6 +40,9 @@
                                     message.textContent = 'Absensi berhasil terkirim!';
                                     message.style.color = 'green';
                                     console.log('Success!', response);
+
+                                    // Reset form setelah berhasil terkirim
+                                    resetForm();
                                 })
                                 .catch(error => {
                                     message.textContent = 'Terjadi kesalahan saat mengirim absensi.';
@@ -59,6 +62,11 @@
                         console.error('Error!', error.message);
                     });
             });
+
+            function resetForm() {
+                // Mengosongkan nilai-nilai pada elemen-elemen form
+                form.reset();
+            }
 
             function validateLocation() {
                 // Cek apakah browser mendukung Geolocation API
