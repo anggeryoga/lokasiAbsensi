@@ -2,8 +2,6 @@
 <html>
 <head>
     <title>Absensi Lokasi</title>
-     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -130,16 +128,23 @@
     </script>
 
     <!-- Remove the old script for form submission and replace it with a new one -->
+<!-- Remove the old script for form submission and replace it with a new one -->
 <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec'
-  const form = document.forms['attendanceForm']
-
-  form.addEventListener('submit', e => {
-    e.preventDefault()
-    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-      .then(response => console.log('Success!', response))
-      .catch(error => console.error('Error!', error.message))
-  })
-</script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyLg5-T14KbSjAnb5nY4Cu6lrjx7VneMlIZrAp_kjFACsvDmYF_oOXuwmTUOV6As2V5fA/exec';
+    const form = document.forms['attendanceForm'];
+  
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+  
+      // Set arrival time before submitting the form
+      setArrivalTime();
+  
+      // Send form data to Google Sheets
+      fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+        .then(response => console.log('Success!', response))
+        .catch(error => console.error('Error!', error.message));
+    });
+  </script>
+  
 </body>
 </html>
