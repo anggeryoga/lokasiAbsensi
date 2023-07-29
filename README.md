@@ -1,9 +1,4 @@
 # Absensi Lokasi - Aplikasi Web
-## Demo
-
-Silakan lihat demo aplikasi [di sini](https://anggeryoga.github.io/lokasiAbsensi/).
-
-
 ## Deskripsi
 
 Absensi Lokasi adalah aplikasi web sederhana yang memungkinkan pengguna melakukan absensi menggunakan lokasi. Aplikasi ini akan memeriksa apakah pengguna berada dalam radius lokasi yang diizinkan, dan kemudian mencatat kehadiran beserta jam kedatangan ke dalam Google Sheets.
@@ -18,7 +13,9 @@ Absensi Lokasi adalah aplikasi web sederhana yang memungkinkan pengguna melakuka
 
 ## Demo
 
-![Absensi Lokasi Demo](demo.gif)
+
+Silakan lihat demo aplikasi [di sini](https://anggeryoga.github.io/lokasiAbsensi/).
+
 
 ## Instalasi
 
